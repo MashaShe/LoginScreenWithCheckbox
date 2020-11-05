@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">LoginScreenWithCheckbox</string>
+    <string name="login_text">Login</string>
+    <string name="password_text">Password</string>
+    <string name="registration_text">Registration</string>
+    <string name="where_save_text">Хранить логин во внешнем хранилище</string>
+</resources>
