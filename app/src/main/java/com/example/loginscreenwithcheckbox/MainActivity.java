@@ -34,8 +34,10 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences myNoteSharedPref;
     private static String NOTE_TEXT = "note_text";
     public static final int REQUEST_CODE_PERMISSION_WRITE_STORAGE = 100;
-    String INTERNAL_FILENAME = "loginpassint.txt";
-    String EXTERNAL_FILENAME = "loginpassext.txt";
+    private String INTERNAL_FILENAME = "loginpassint.txt";
+    private String EXTERNAL_FILENAME = "loginpassext.txt";
+    final private String EXTERNAL = "external";
+    final private String INTERNAL = "internal";
     CheckBox checkBox;
     EditText loginText;
     EditText passText;
@@ -58,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if (b) {
-                    location = "external";
+                    location = EXTERNAL;
                     //сразу просим разрешения
                     int permissionStatus = ContextCompat.checkSelfPermission(MainActivity.this,
                             android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
@@ -70,8 +72,7 @@ public class MainActivity extends AppCompatActivity {
                                 REQUEST_CODE_PERMISSION_WRITE_STORAGE);
                     }
                 } else {
-                    location = "internal";
-
+                    location = INTERNAL;
                 }
                 myNoteSharedPref = getSharedPreferences("MyNote", MODE_PRIVATE);
                 SharedPreferences.Editor myEditor = myNoteSharedPref.edit();
@@ -105,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
         if (location.equals(null)) {
             checkBox.setChecked(false);
         } else {
-            if (location.equals("external")) {
+            if (location.equals(EXTERNAL)) {
                 checkBox.setChecked(true);
             } else {
                 checkBox.setChecked(false);
@@ -116,12 +117,14 @@ public class MainActivity extends AppCompatActivity {
     // method for login checking
     private void readFile(String location, String loginText, String passText) throws FileNotFoundException {
         Map<String, String> credentials = new HashMap<>();
+        // можно улучшить
         switch (location) {
-            case "internal":
-                try {
-                    FileInputStream fileInputStream = openFileInput(INTERNAL_FILENAME);
-                    InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
-                    BufferedReader reader = new BufferedReader(inputStreamReader);
+            case INTERNAL:
+                try (FileInputStream fileInputStream = openFileInput(INTERNAL_FILENAME);InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
+                     BufferedReader reader = new BufferedReader(inputStreamReader);){
+                   // FileInputStream fileInputStream = openFileInput(INTERNAL_FILENAME);
+                   // InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
+                    //BufferedReader reader = new BufferedReader(inputStreamReader);
                     loginPassCheck(reader, credentials, loginText, passText);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
@@ -130,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 break;
-            case "external":
+            case EXTERNAL:
                 if (isExternalStorageReadable()) {
                     File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS),
                             EXTERNAL_FILENAME);
@@ -159,13 +162,15 @@ public class MainActivity extends AppCompatActivity {
             String credentials = loginText + "&&&" + passText + System.getProperty("line.separator");
 
             switch (location) {
-                case "internal":
-                    try {
-                        FileOutputStream fileOutputStream = openFileOutput(INTERNAL_FILENAME, MODE_PRIVATE);
-                        OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
-                        BufferedWriter bw = new BufferedWriter(outputStreamWriter);
+                case INTERNAL:
+                    try (FileOutputStream fileOutputStream = openFileOutput(INTERNAL_FILENAME, MODE_PRIVATE);
+                         OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
+                         BufferedWriter bw = new BufferedWriter(outputStreamWriter)) {
+                        //FileOutputStream fileOutputStream = openFileOutput(INTERNAL_FILENAME, MODE_PRIVATE);
+                       // OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
+                       // BufferedWriter bw = new BufferedWriter(outputStreamWriter);
                         bw.write(credentials);
-                        bw.close();
+                       // bw.close();
                         Toast.makeText(MainActivity.this, "Registered successfully", Toast.LENGTH_SHORT).show();
 
                     } catch (FileNotFoundException e) {
@@ -175,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     break;
 
-                case "external":
+                case EXTERNAL:
                     int permissionStatus = ContextCompat.checkSelfPermission(this,
                             android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
                     if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
@@ -184,12 +189,11 @@ public class MainActivity extends AppCompatActivity {
                                     .getExternalStoragePublicDirectory(
                                             Environment.DIRECTORY_DOCUMENTS),
                                     EXTERNAL_FILENAME);
-                            try {
-                                FileWriter fw = new FileWriter(file);
+                            try (FileWriter fw = new FileWriter(file)){
+                                //FileWriter fw = new FileWriter(file);
                                 fw.write(credentials);
-                                fw.close();
+                              //  fw.close();
                                 Toast.makeText(MainActivity.this, "Registered successfully", Toast.LENGTH_SHORT).show();
-
                             } catch (Exception e) {
                                 System.out.println(e);
                             }
